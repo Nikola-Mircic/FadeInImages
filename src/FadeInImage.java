@@ -1,4 +1,5 @@
 import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
@@ -14,6 +15,8 @@ public class FadeInImage extends Canvas implements Runnable{
 	
 	private BufferedImage animated;
 	private BufferedImage img;
+	private int[] animated_pixels;
+	private int[] img_pixels;
 	private String img_path = "";//Absolute path to the image;
 	
 	private String TITLE = "Fade in image";
@@ -27,7 +30,7 @@ public class FadeInImage extends Canvas implements Runnable{
 		if(loaded) {
 			createFrame(width,height);
 			
-			for(double i=0;i<=1;i+=0.02)
+			for(double i=0;i<=1;i+=0.001)
 				render(i);
 		}else {
 			createFrame(1,1);
@@ -63,22 +66,26 @@ public class FadeInImage extends Canvas implements Runnable{
 			height = img.getHeight();
 		
 		animated = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		
+		img_pixels = getRaster();
+		animated_pixels = ((DataBufferInt)animated.getRaster().getDataBuffer()).getData();
 	}
 	
 	private void render(double k) {
-		int[] img_pixels = getRaster();
-		int[] animated_pixels = ((DataBufferInt)animated.getRaster().getDataBuffer()).getData();
-		int color;
-		
+		Color c1,c2;
 		for(int y=0;y<height;y++) {
 			for(int x=0;x<width;x++) {
-				color = img_pixels[x+y*width];
-				animated_pixels[x+y*width] = 0;
-				animated_pixels[x+y*width] += ((int)(k*(color>>16))<<16);
-				color -= (color>>16)<<16;
-				animated_pixels[x+y*width] += ((int)(k*(color>>8))<<8);
-				color -= (color>>8)<<8;
-				animated_pixels[x+y*width] += (int)(k*color);
+				c1 = getColors(animated_pixels[x+y*width]);
+				c2 = getColors(img_pixels[x+y*width]);
+				
+				if(c1.getRed() < c2.getRed()) 
+					animated_pixels[x+y*width]=((int)(k*c2.getRed()))<<16;
+				
+				if(c1.getGreen() < c2.getGreen())
+					animated_pixels[x+y*width]+=((int)(k*c2.getGreen()))<<8;
+				
+				if(c1.getBlue() < c2.getBlue()) 
+					animated_pixels[x+y*width]+=((int)(k*c2.getBlue()));
 			}
 		}
 		
@@ -95,6 +102,18 @@ public class FadeInImage extends Canvas implements Runnable{
 		g.drawImage(animated, 0, 0, null);
 		g.dispose();
 		bs.show();
+	}
+	
+	private Color getColors(int color) {
+		Color c;
+		color -= (color>>24)<<24;
+		int r = color>>16;
+		color -= (r<<16);
+		int g = color>>8;
+		color -= (g<<8);
+		int b = color;
+		c = new Color(r, g, b);
+		return c;
 	}
 	
 	private int[] getRaster() {
