@@ -17,7 +17,7 @@ public class FadeInImage extends Canvas implements Runnable{
 	private BufferedImage img;
 	private int[] animated_pixels;
 	private int[] img_pixels;
-	private String img_path = "";//Absolute path to the image;
+	private String img_path = "./res/Image.png";//Path(absolute or relative) to the image;
 	
 	private String TITLE = "Fade in image";
 	private int MAX_WIDTH=800,MAX_HEIGHT=700;
@@ -40,7 +40,7 @@ public class FadeInImage extends Canvas implements Runnable{
 	private void createFrame(int w,int h) {
 		JFrame frame = new JFrame();
 		frame.setTitle(TITLE);
-		frame.setSize(w, h);
+		frame.setSize(w+5, h+30);
 		frame.setResizable(false);
 		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -52,7 +52,6 @@ public class FadeInImage extends Canvas implements Runnable{
 		try {
 			img = ImageIO.read(new File(img_path));
 		} catch (IOException e) {
-			e.printStackTrace();
 			loaded = false;
 			return;
 		}
